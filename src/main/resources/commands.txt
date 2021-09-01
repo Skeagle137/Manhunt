@@ -1,0 +1,18 @@
+manhunt,mh {
+    reload {
+        permission manhunt.reload
+        help Reloads the plugin config and messages
+        hook reload
+    }
+}
+setlobby {
+    permission manhunt.setlobby
+    help Set the lobby for manhunt games.
+    hook setlobby
+}
+getcompass,getc {
+    permission manhunt.compass
+    user player
+    help Set the lobby for manhunt games.
+    hook getcompass
+}

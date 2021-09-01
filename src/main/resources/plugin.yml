@@ -1,0 +1,7 @@
+name: Manhunt
+version: @version@
+main: net.skeagle.manhunt.Manhunt
+api-version: 1.17
+depend: [VRNLib]
+author: Skeagle
+description: Just another manhunt plugin.

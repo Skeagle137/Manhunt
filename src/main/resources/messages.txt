@@ -1,0 +1,9 @@
+runnerWin: &b&lSPEEDRUNNER WINS
+huntersWin: &c&lHUNTERS WIN
+drawGame: &e&lDRAW
+dragonKilled: &aThe dragon was killed by %runner%.
+runnerDied: &7%runner% died.
+runnerKilled: &7%runner% was killed by %hunter%.
+runnerQuit: &7%runner% has left the game.
+huntersQuit: &cAll hunters have left the game.
+outOfTime: &7Exceeded the max time of &b%time%&7.

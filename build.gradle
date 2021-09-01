@@ -1,0 +1,74 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+plugins {
+    id 'java'
+    id 'idea'
+    id 'maven-publish'
+}
+
+group = 'net.skeagle'
+version = '1.0'
+description = 'manhunt'
+sourceCompatibility = 16
+targetCompatibility = 16
+
+String mc = '1.17.1'
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { url = uri('https://jitpack.io') }
+    mavenLocal()
+}
+
+dependencies {
+    compileOnly 'net.skeagle:VRNLib:1.2b'
+    compileOnly "org.spigotmc:spigot-api:${mc}-R0.1-SNAPSHOT"
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src'
+        }
+        resources {
+            srcDir 'resources'
+        }
+    }
+}
+
+task updatePlugins {
+    doLast {
+        copy {
+            from 'build/libs'
+            into 'C:/Users/Skeagle/Documents/VRN Stuff/Dev 1.17/plugins'
+        }
+    }
+}
+
+task deploy(dependsOn: ["jar", "updatePlugins"]) {
+    updatePlugins.mustRunAfter jar
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    from(sourceSets.main.resources.srcDirs) {
+        filter ReplaceTokens, tokens: [version: version]
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
