@@ -14,6 +14,8 @@ import net.skeagle.vrnlib.itemutils.ItemUtils;
 import net.skeagle.vrnlib.misc.EventListener;
 import net.skeagle.vrnlib.misc.Task;
 import org.bukkit.*;
+import org.bukkit.advancement.Advancement;
+import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -73,7 +75,7 @@ public class MHManager {
         //global events
 
         new EventListener<>(PlayerRespawnEvent.class, e -> {
-            if (gameState != MHState.WAITING) {
+            if (gameState != MHState.WAITING && e.getPlayer().getBedSpawnLocation() == null) {
                 Location actual = worldManager.getManhuntWorld().getSpawnLocation();
                 actual.setWorld(worldManager.getManhuntWorld());
                 e.setRespawnLocation(actual);
@@ -81,13 +83,26 @@ public class MHManager {
         });
 
         new EventListener<>(PlayerJoinEvent.class, e -> {
-            Player p = e.getPlayer();
-            p.getInventory().clear();
-            p.setFireTicks(0);
-            p.getActivePotionEffects().clear();
-            p.setArrowsInBody(0);
-            p.setFoodLevel(20);
-            p.setHealth(p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+            Task.syncDelayed(() -> {
+                Player p = e.getPlayer();
+                Iterator<Advancement> it = Bukkit.getServer().advancementIterator();
+                while (it.hasNext()) {
+                    AdvancementProgress progress = e.getPlayer().getAdvancementProgress(it.next());
+                    progress.getAwardedCriteria().forEach(progress::revokeCriteria);
+                }
+                p.getInventory().clear();
+                p.setFireTicks(0);
+                p.getActivePotionEffects().clear();
+                p.setArrowsInBody(0);
+                p.setFoodLevel(20);
+                p.setHealth(p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+            }, 4L);
+        });
+
+        new EventListener<>(FoodLevelChangeEvent.class, e -> {
+            if (gameState != MHState.INGAME) {
+                e.setCancelled(true);
+            }
         });
 
         new EventListener<>(PlayerQuitEvent.class, e -> removeHunter(e.getPlayer()));
@@ -98,26 +113,32 @@ public class MHManager {
             }
         });
 
-        new EventListener<>(EntityDamageEvent.class, e -> {
+        new EventListener<>(EntityDamageByEntityEvent.class, e -> {
             if (e.getEntity() instanceof Player && gameState != MHState.INGAME) {
+                e.setCancelled(true);
+            }
+        });
+
+        new EventListener<>(EntityDamageEvent.class, e -> {
+            if (e.getEntity() instanceof Player && gameState != MHState.STARTING && gameState != MHState.INGAME) {
                 e.setCancelled(true);
             }
         });
 
         new EventListener<>(EntityPickupItemEvent.class, e -> {
-            if (e.getEntity() instanceof Player && gameState != MHState.INGAME) {
+            if (e.getEntity() instanceof Player && gameState != MHState.STARTING && gameState != MHState.INGAME) {
                 e.setCancelled(true);
             }
         });
 
         new EventListener<>(BlockBreakEvent.class, e -> {
-            if (gameState != MHState.INGAME) {
+            if (gameState != MHState.STARTING && gameState != MHState.INGAME) {
                 e.setCancelled(true);
             }
         });
 
         new EventListener<>(PlayerInteractEvent.class, e -> {
-            if (gameState != MHState.INGAME) {
+            if (gameState != MHState.STARTING && gameState != MHState.INGAME) {
                 e.setCancelled(true);
             }
         });

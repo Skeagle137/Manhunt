@@ -81,6 +81,34 @@ public class StartingPhase extends MHBasePhase {
             e.getPlayer().teleport(e.getPlayer().getBedSpawnLocation());
         }));
 
+        addListener(new EventListener<>(EntityDamageEvent.class, e -> {
+            if (!(e.getEntity() instanceof Player))
+                return;
+            if (!isRunnerReleased((Player) e.getEntity())) {
+                e.setCancelled(true);
+            }
+        }));
+
+        addListener(new EventListener<>(EntityPickupItemEvent.class, e -> {
+            if (!(e.getEntity() instanceof Player))
+                return;
+            if (isRunnerReleased((Player) e.getEntity())) {
+                e.setCancelled(true);
+            }
+        }));
+
+        addListener(new EventListener<>(BlockBreakEvent.class, e -> {
+            if (isRunnerReleased(e.getPlayer())) {
+                e.setCancelled(true);
+            }
+        }));
+
+        addListener(new EventListener<>(PlayerInteractEvent.class, e -> {
+            if (isRunnerReleased(e.getPlayer())) {
+                e.setCancelled(true);
+            }
+        }));
+
         Task.syncDelayed(() -> manager.getMHBasePlayers().forEach(bp -> manager.setReleased(bp, false)), 4L);
 
         addTask(Task.syncRepeating(() -> {
@@ -120,6 +148,10 @@ public class StartingPhase extends MHBasePhase {
             say(p, "&cYou have been brought back to the lobby since there are not enough players to start the game.");
         });
         manager.clearPlayers();
+    }
+
+    private boolean isRunnerReleased(Player p) {
+        return !manager.isHunter(p) && manager.getRunner().isReleased();
     }
 
     private void setupPlayers() {

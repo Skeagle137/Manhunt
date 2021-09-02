@@ -45,7 +45,7 @@ public class WaitPhase extends MHBasePhase {
                 Bukkit.getOnlinePlayers().forEach(p -> say(p, "&ewaiting for more players to join..."));
             }
             else if (startCountdown) {
-                Bukkit.getOnlinePlayers().forEach(p -> say(p, "&cNot enough players to start the game. Trying again soon..."));
+                Bukkit.getOnlinePlayers().forEach(p -> say(p, "&cNot enough players to start the game."));
                 startCountdown = false;
             }
             timeElapsed++;

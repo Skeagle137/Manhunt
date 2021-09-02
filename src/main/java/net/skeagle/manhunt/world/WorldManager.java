@@ -39,7 +39,7 @@ public class WorldManager {
         world.setDifficulty(Difficulty.EASY);
         world.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true);
         world.getWorldBorder().setCenter(world.getSpawnLocation());
-        world.getWorldBorder().setSize(6000);
+        world.getWorldBorder().setSize(12000);
         return world;
     }
 
