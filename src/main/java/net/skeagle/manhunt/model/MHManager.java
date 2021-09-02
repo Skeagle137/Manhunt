@@ -56,8 +56,8 @@ public class MHManager {
         this.plugin = plugin;
         worldManager = new WorldManager();
         voteManager = new MHVoteManager();
-        runnerBoard = new MHScoreboard("&b&lRUNNER", "&8[&bR&8]&r", ChatColor.AQUA);
-        hunterBoard = new MHScoreboard("&c&lHUNTER", "&8[&cH&8]&r", ChatColor.RED);
+        runnerBoard = new MHScoreboard("&b&lRUNNER", "&8[&bR&8]&r ", ChatColor.AQUA);
+        hunterBoard = new MHScoreboard("&c&lHUNTER", "&8[&cH&8]&r ", ChatColor.RED);
         phases = new ArrayList<>();
         hunters = new ArrayList<>();
 
@@ -82,22 +82,21 @@ public class MHManager {
             }
         });
 
-        new EventListener<>(PlayerJoinEvent.class, e -> {
-            Task.syncDelayed(() -> {
-                Player p = e.getPlayer();
-                Iterator<Advancement> it = Bukkit.getServer().advancementIterator();
-                while (it.hasNext()) {
-                    AdvancementProgress progress = e.getPlayer().getAdvancementProgress(it.next());
-                    progress.getAwardedCriteria().forEach(progress::revokeCriteria);
-                }
-                p.getInventory().clear();
-                p.setFireTicks(0);
-                p.getActivePotionEffects().clear();
-                p.setArrowsInBody(0);
-                p.setFoodLevel(20);
-                p.setHealth(p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
-            }, 4L);
-        });
+        new EventListener<>(PlayerJoinEvent.class, e ->
+                Task.syncDelayed(() -> {
+                    Player p = e.getPlayer();
+                    Iterator<Advancement> it = Bukkit.getServer().advancementIterator();
+                    while (it.hasNext()) {
+                        AdvancementProgress progress = e.getPlayer().getAdvancementProgress(it.next());
+                        progress.getAwardedCriteria().forEach(progress::revokeCriteria);
+                    }
+                    p.getInventory().clear();
+                    p.setFireTicks(0);
+                    p.getActivePotionEffects().clear();
+                    p.setArrowsInBody(0);
+                    p.setFoodLevel(20);
+                    p.setHealth(p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+                }, 4L));
 
         new EventListener<>(FoodLevelChangeEvent.class, e -> {
             if (gameState != MHState.INGAME) {

@@ -84,7 +84,7 @@ public class StartingPhase extends MHBasePhase {
         addListener(new EventListener<>(EntityDamageEvent.class, e -> {
             if (!(e.getEntity() instanceof Player))
                 return;
-            if (!isRunnerReleased((Player) e.getEntity())) {
+            if (isHunterOrNotReleased((Player) e.getEntity())) {
                 e.setCancelled(true);
             }
         }));
@@ -92,19 +92,19 @@ public class StartingPhase extends MHBasePhase {
         addListener(new EventListener<>(EntityPickupItemEvent.class, e -> {
             if (!(e.getEntity() instanceof Player))
                 return;
-            if (isRunnerReleased((Player) e.getEntity())) {
+            if (isHunterOrNotReleased((Player) e.getEntity())) {
                 e.setCancelled(true);
             }
         }));
 
         addListener(new EventListener<>(BlockBreakEvent.class, e -> {
-            if (isRunnerReleased(e.getPlayer())) {
+            if (isHunterOrNotReleased(e.getPlayer())) {
                 e.setCancelled(true);
             }
         }));
 
         addListener(new EventListener<>(PlayerInteractEvent.class, e -> {
-            if (isRunnerReleased(e.getPlayer())) {
+            if (isHunterOrNotReleased(e.getPlayer())) {
                 e.setCancelled(true);
             }
         }));
@@ -150,8 +150,8 @@ public class StartingPhase extends MHBasePhase {
         manager.clearPlayers();
     }
 
-    private boolean isRunnerReleased(Player p) {
-        return !manager.isHunter(p) && manager.getRunner().isReleased();
+    private boolean isHunterOrNotReleased(Player p) {
+        return manager.isHunter(p) || !manager.getRunner().isReleased();
     }
 
     private void setupPlayers() {
