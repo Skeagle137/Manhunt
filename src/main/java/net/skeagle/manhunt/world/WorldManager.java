@@ -52,15 +52,15 @@ public class WorldManager {
     private void deleteWorld(World w) {
         Bukkit.unloadWorld(w, true);
         String s = w.getWorldFolder().getAbsolutePath();
-        deleteFile(new File(s), false);
+        deleteFile(new File(s));
     }
 
-    private void deleteFile(File file, boolean contents) {
+    private void deleteFile(File file) {
         if (file.exists()) {
             try (Stream<Path> files = Files.walk(file.toPath())) {
                 files.sorted(Comparator.reverseOrder())
                         .map(Path::toFile)
-                        .filter(f -> contents && !f.equals(file))
+                        .filter(f -> !f.equals(file))
                         .forEach(File::delete);
             } catch (IOException e) {
                 e.printStackTrace();
