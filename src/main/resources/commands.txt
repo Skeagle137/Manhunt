@@ -10,9 +10,3 @@ setlobby {
     help Set the lobby for manhunt games.
     hook setlobby
 }
-getcompass,getc {
-    permission manhunt.compass
-    user player
-    help Set the lobby for manhunt games.
-    hook getcompass
-}

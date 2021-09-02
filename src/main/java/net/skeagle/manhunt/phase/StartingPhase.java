@@ -18,10 +18,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
 
 import java.util.Random;
 
@@ -58,7 +55,6 @@ public class StartingPhase extends MHBasePhase {
         }));
 
         addListener(new EventListener<>(PlayerQuitEvent.class, e -> {
-            System.out.println(Bukkit.getOnlinePlayers().size());
             if (Bukkit.getOnlinePlayers().size() <= 2) {
                 previousPhase();
             } else if (e.getPlayer() == manager.getRunner().getPlayer()) {
@@ -83,30 +79,6 @@ public class StartingPhase extends MHBasePhase {
                 return;
             }
             e.getPlayer().teleport(e.getPlayer().getBedSpawnLocation());
-        }));
-
-        addListener(new EventListener<>(EntityDamageEvent.class, e -> {
-            if (e instanceof Player) {
-                e.setCancelled(true);
-            }
-        }));
-
-        addListener(new EventListener<>(EntityPickupItemEvent.class, e -> {
-            if (e instanceof Player) {
-                e.setCancelled(true);
-            }
-        }));
-
-        addListener(new EventListener<>(PlayerInteractEvent.class, e -> {
-            if (e instanceof Player) {
-                e.setCancelled(true);
-            }
-        }));
-
-        addListener(new EventListener<>(BlockBreakEvent.class, e -> {
-            if (e instanceof Player) {
-                e.setCancelled(true);
-            }
         }));
 
         Task.syncDelayed(() -> manager.getMHBasePlayers().forEach(bp -> manager.setReleased(bp, false)), 4L);

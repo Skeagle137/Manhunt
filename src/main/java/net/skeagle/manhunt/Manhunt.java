@@ -45,7 +45,7 @@ public final class Manhunt extends JavaPlugin {
     @Override
     public void onDisable() {
         settings.get().save();
-        if (manager.getState() != MHState.WAITING && manager.getState() != MHState.IDLE) {
+        if (manager != null) {
             manager.getWorldManager().deleteAll();
         }
     }
@@ -65,10 +65,5 @@ public final class Manhunt extends JavaPlugin {
         }
         Settings.lobbyLocation = player.getLocation();
         say(player, "&aUpdated the lobby position. Players will spawn here when they join and when a game has ended.");
-    }
-
-    @CommandHook("getcompass")
-    public void onGetCompass(Player player) {
-        player.getInventory().setItem(8, manager.getTrackerItem());
     }
 }

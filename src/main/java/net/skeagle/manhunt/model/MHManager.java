@@ -14,8 +14,10 @@ import net.skeagle.vrnlib.itemutils.ItemUtils;
 import net.skeagle.vrnlib.misc.EventListener;
 import net.skeagle.vrnlib.misc.Task;
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.*;
@@ -69,11 +71,54 @@ public class MHManager {
         startCurrentPhase();
 
         //global events
+
+        new EventListener<>(PlayerRespawnEvent.class, e -> {
+            if (gameState != MHState.WAITING) {
+                Location actual = worldManager.getManhuntWorld().getSpawnLocation();
+                actual.setWorld(worldManager.getManhuntWorld());
+                e.setRespawnLocation(actual);
+            }
+        });
+
+        new EventListener<>(PlayerJoinEvent.class, e -> {
+            Player p = e.getPlayer();
+            p.getInventory().clear();
+            p.setFireTicks(0);
+            p.getActivePotionEffects().clear();
+            p.setArrowsInBody(0);
+            p.setFoodLevel(20);
+            p.setHealth(p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+        });
+
         new EventListener<>(PlayerQuitEvent.class, e -> removeHunter(e.getPlayer()));
 
         new EventListener<>(AsyncPlayerPreLoginEvent.class, e -> {
             if (gameState == MHState.INGAME || gameState == MHState.ENDED) {
                 e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, color("&cThis game is in progress."));
+            }
+        });
+
+        new EventListener<>(EntityDamageEvent.class, e -> {
+            if (e.getEntity() instanceof Player && gameState != MHState.INGAME) {
+                e.setCancelled(true);
+            }
+        });
+
+        new EventListener<>(EntityPickupItemEvent.class, e -> {
+            if (e.getEntity() instanceof Player && gameState != MHState.INGAME) {
+                e.setCancelled(true);
+            }
+        });
+
+        new EventListener<>(BlockBreakEvent.class, e -> {
+            if (gameState != MHState.INGAME) {
+                e.setCancelled(true);
+            }
+        });
+
+        new EventListener<>(PlayerInteractEvent.class, e -> {
+            if (gameState != MHState.INGAME) {
+                e.setCancelled(true);
             }
         });
 
