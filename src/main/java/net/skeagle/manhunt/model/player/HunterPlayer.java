@@ -31,6 +31,7 @@ public class HunterPlayer extends MHBasePlayer {
             compassMeta.setLodestoneTracked(false);
             compassMeta.setLodestone(lastRunnerLocation() != null ? lastRunnerLocation() : runnerLoc);
             item.setItemMeta(compassMeta);
+            getPlayer().updateInventory();
         }
         if (getManager().isTracker(this.getPlayer().getInventory().getItemInMainHand())) {
             boolean sameWorld = this.getPlayer().getWorld().getEnvironment() == getManager().getRunner().getPlayer().getWorld().getEnvironment();
