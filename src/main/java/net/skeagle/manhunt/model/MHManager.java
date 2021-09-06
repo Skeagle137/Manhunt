@@ -29,20 +29,19 @@ import org.bukkit.inventory.ItemStack;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static net.skeagle.manhunt.Utils.say;
 import static net.skeagle.vrnlib.misc.FormatUtils.color;
 
 public class MHManager {
 
     /*TODO:
-       - safe tp players to land
-       - 3+ players bug testing
        - vote system to choose hunter or runner (needed impl)
-       */
+    */
 
     private final Manhunt plugin;
     private final WorldManager worldManager;
     private final MHVoteManager voteManager;
-    private final MHScoreboard runnerBoard, hunterBoard;
+    private final MHScoreboard runnerBoard, hunterBoard, spectatorBoard;
     private final List<MHBasePhase> phases;
     private MHBasePhase currentPhase;
     private MHState gameState;
@@ -58,6 +57,7 @@ public class MHManager {
         voteManager = new MHVoteManager();
         runnerBoard = new MHScoreboard("&b&lRUNNER", "&8[&bR&8]&r ", ChatColor.AQUA);
         hunterBoard = new MHScoreboard("&c&lHUNTER", "&8[&cH&8]&r ", ChatColor.RED);
+        spectatorBoard = new MHScoreboard("&7&lSPECTATOR", "&8[&7S&8]&r ", ChatColor.GRAY);
         phases = new ArrayList<>();
         hunters = new ArrayList<>();
 
@@ -82,21 +82,39 @@ public class MHManager {
             }
         });
 
-        new EventListener<>(PlayerJoinEvent.class, e ->
-                Task.syncDelayed(() -> {
-                    Player p = e.getPlayer();
-                    Iterator<Advancement> it = Bukkit.getServer().advancementIterator();
-                    while (it.hasNext()) {
-                        AdvancementProgress progress = e.getPlayer().getAdvancementProgress(it.next());
-                        progress.getAwardedCriteria().forEach(progress::revokeCriteria);
-                    }
-                    p.getInventory().clear();
-                    p.setFireTicks(0);
-                    p.getActivePotionEffects().clear();
-                    p.setArrowsInBody(0);
-                    p.setFoodLevel(20);
-                    p.setHealth(p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
-                }, 4L));
+        new EventListener<>(PlayerJoinEvent.class, e -> {
+            if (gameState != MHState.INGAME && gameState != MHState.ENDED) {
+                e.setJoinMessage(color("&e" + e.getPlayer() + " &7joined the game."));
+            }
+            else {
+                e.setJoinMessage(color("&7" + e.getPlayer() + " &8joined the spectators."));
+            }
+
+            if (gameState == MHState.INGAME) {
+                e.getPlayer().setGameMode(GameMode.SPECTATOR);
+            }
+            Task.syncDelayed(() -> {
+                Player p = e.getPlayer();
+                Iterator<Advancement> it = Bukkit.getServer().advancementIterator();
+                while (it.hasNext()) {
+                    AdvancementProgress progress = e.getPlayer().getAdvancementProgress(it.next());
+                    progress.getAwardedCriteria().forEach(progress::revokeCriteria);
+                }
+                p.getInventory().clear();
+                p.setFireTicks(0);
+                p.getActivePotionEffects().clear();
+                p.setArrowsInBody(0);
+                p.setFreezeTicks(0);
+                p.setFoodLevel(20);
+                p.setRemainingAir(p.getMaximumAir());
+                p.setHealth(p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+                if (gameState == MHState.INGAME) {
+                    p.teleport(worldManager.getManhuntWorld().getSpawnLocation());
+                    p.setScoreboard(spectatorBoard.getBoard());
+                    spectatorBoard.getTeam().addEntry(p.getName());
+                }
+            }, 4L);
+        });
 
         new EventListener<>(FoodLevelChangeEvent.class, e -> {
             if (gameState != MHState.INGAME) {
@@ -107,8 +125,8 @@ public class MHManager {
         new EventListener<>(PlayerQuitEvent.class, e -> removeHunter(e.getPlayer()));
 
         new EventListener<>(AsyncPlayerPreLoginEvent.class, e -> {
-            if (gameState == MHState.INGAME || gameState == MHState.ENDED) {
-                e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, color("&cThis game is in progress."));
+            if (gameState == MHState.ENDED) {
+                e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, color("&cThis server is restarting. Please try again later."));
             }
         });
 
@@ -171,6 +189,16 @@ public class MHManager {
                 e.setCancelled(true);
             }
         });
+
+        //global spectator stuff
+
+        new EventListener<>(PlayerCommandPreprocessEvent.class, e -> {
+            String s = Settings.allowedSpecCommands.stream().filter(e.getMessage()::startsWith).findFirst().orElse(null);
+            if (!e.getPlayer().isOp() && s == null) {
+                e.setCancelled(true);
+                say(e.getPlayer(), "&cYou cannot execute this command as a spectator.");
+            }
+        });
     }
 
     public ItemStack getTrackerItem() {
@@ -201,7 +229,14 @@ public class MHManager {
     }
 
     private void resetAndClose() {
-        Bukkit.getOnlinePlayers().forEach(p -> p.kickPlayer(color("&6Thanks for playing!")));
+        Bukkit.getOnlinePlayers().forEach(p -> {
+            if (Settings.sendToServerLobby) {
+                p.performCommand("lobby");
+            }
+            else {
+                p.kickPlayer(color("&6Thanks for playing!"));
+            }
+        });
         worldManager.deleteAll();
         plugin.getServer().shutdown();
     }
@@ -284,6 +319,7 @@ public class MHManager {
         String s = String.format("%02d", hours) + ":" + String.format("%02d", minutes) + ":" + String.format("%02d", seconds);
         hunterBoard.updateTime(s);
         runnerBoard.updateTime(s);
+        spectatorBoard.updateTime(s);
     }
 
     public List<HunterPlayer> getHunters() {

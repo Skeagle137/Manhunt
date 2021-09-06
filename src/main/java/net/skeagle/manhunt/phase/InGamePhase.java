@@ -6,6 +6,7 @@ import net.skeagle.manhunt.model.player.HunterPlayer;
 import net.skeagle.vrnlib.misc.EventListener;
 import net.skeagle.vrnlib.misc.Task;
 import net.skeagle.vrnlib.misc.TimeUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.EnderDragon;
@@ -114,7 +115,7 @@ public class InGamePhase extends MHBasePhase {
             s = s.replaceAll("%time%", TimeUtil.timeToMessage(maxInGameTime));
         }
         String finalResult = s;
-        manager.getMHPlayers().forEach(p -> {
+        Bukkit.getOnlinePlayers().forEach(p -> {
             p.sendTitle(winner.getTitle(), finalResult, 10, 100, 80);
             say(p, "&eRestarting in &a" + TimeUtil.timeToMessage(Settings.restartTime) + "&e.");
         });

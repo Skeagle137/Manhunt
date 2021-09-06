@@ -6,6 +6,8 @@ import net.skeagle.vrnlib.configmanager.ConfigManager;
 import net.skeagle.vrnlib.configmanager.annotations.ConfigValue;
 import org.bukkit.Location;
 
+import java.util.List;
+
 public class Settings {
     @ConfigValue("world-name")
     public static String worldName = "manhunt";
@@ -19,6 +21,10 @@ public class Settings {
     public static Location lobbyLocation;
     @ConfigValue("start-area-size")
     public static int startAreaDiameter = 7;
+    @ConfigValue("send-to-server-lobby")
+    public static boolean sendToServerLobby = false;
+    @ConfigValue("spectators-allowed-commands")
+    public static List<String> allowedSpecCommands = ConfigManager.list(String.class, "lobby", "hub", "server");
 
     private ConfigManager config;
 
