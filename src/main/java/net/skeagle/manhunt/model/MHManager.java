@@ -46,6 +46,7 @@ public class MHManager {
     private MHBasePhase currentPhase;
     private MHState gameState;
     private final List<HunterPlayer> hunters;
+    private final List<UUID> spectators;
     private RunnerPlayer runner;
     private Task updateTask;
     private int phaseIndex;
@@ -60,6 +61,7 @@ public class MHManager {
         spectatorBoard = new MHScoreboard("&7&lSPECTATOR", "&8[&7S&8]&r ", ChatColor.GRAY);
         phases = new ArrayList<>();
         hunters = new ArrayList<>();
+        spectators = new ArrayList<>();
 
         //add phases
         phases.add(new IdlePhase(this));
@@ -82,16 +84,26 @@ public class MHManager {
             }
         });
 
-        new EventListener<>(PlayerJoinEvent.class, e -> {
+        new EventListener<>(PlayerQuitEvent.class, e -> {
             if (gameState != MHState.INGAME && gameState != MHState.ENDED) {
-                e.setJoinMessage(color("&e" + e.getPlayer() + " &7joined the game."));
+                e.setQuitMessage(color("&e" + e.getPlayer().getName() + " &7left the game."));
             }
             else {
-                e.setJoinMessage(color("&7" + e.getPlayer() + " &8joined the spectators."));
+                e.setQuitMessage(color("&7" + e.getPlayer().getName() + " &8left the spectators."));
+            }
+        });
+
+        new EventListener<>(PlayerJoinEvent.class, e -> {
+            if (gameState != MHState.INGAME && gameState != MHState.ENDED) {
+                e.setJoinMessage(color("&e" + e.getPlayer().getName() + " &7joined the game."));
+            }
+            else {
+                e.setJoinMessage(color("&7" + e.getPlayer().getName() + " &8joined the spectators."));
             }
 
             if (gameState == MHState.INGAME) {
                 e.getPlayer().setGameMode(GameMode.SPECTATOR);
+                spectators.add(e.getPlayer().getUniqueId());
             }
             Task.syncDelayed(() -> {
                 Player p = e.getPlayer();
@@ -193,10 +205,12 @@ public class MHManager {
         //global spectator stuff
 
         new EventListener<>(PlayerCommandPreprocessEvent.class, e -> {
-            String s = Settings.allowedSpecCommands.stream().filter(e.getMessage()::startsWith).findFirst().orElse(null);
-            if (!e.getPlayer().isOp() && s == null) {
-                e.setCancelled(true);
-                say(e.getPlayer(), "&cYou cannot execute this command as a spectator.");
+            if (spectators.contains(e.getPlayer().getUniqueId())) {
+                String s = Settings.allowedSpecCommands.stream().filter(e.getMessage()::startsWith).findFirst().orElse(null);
+                if (!e.getPlayer().isOp() && s == null) {
+                    e.setCancelled(true);
+                    say(e.getPlayer(), "&cYou cannot execute this command as a spectator.");
+                }
             }
         });
     }
