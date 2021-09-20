@@ -168,7 +168,7 @@ public class MHManager {
 
         //global tracker stuff
         new EventListener<>(PlayerSwapHandItemsEvent.class, e -> {
-            if (isTracker(e.getMainHandItem())) {
+            if (isTracker(e.getMainHandItem()) || isTracker(e.getOffHandItem())) {
                 e.setCancelled(true);
             }
         });
