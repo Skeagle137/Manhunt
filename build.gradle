@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'net.skeagle'
-version = '1.1.1'
+version = '1.1.2'
 description = 'manhunt'
 sourceCompatibility = 16
 targetCompatibility = 16
