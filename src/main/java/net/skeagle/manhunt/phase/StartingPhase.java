@@ -98,12 +98,6 @@ public class StartingPhase extends MHBasePhase {
             }
         }));
 
-        addListener(new EventListener<>(BlockBreakEvent.class, e -> {
-            if (isHunterOrNotReleased(e.getPlayer())) {
-                e.setCancelled(true);
-            }
-        }));
-
         addListener(new EventListener<>(PlayerInteractEvent.class, e -> {
             if (isHunterOrNotReleased(e.getPlayer())) {
                 e.setCancelled(true);
@@ -123,8 +117,8 @@ public class StartingPhase extends MHBasePhase {
     @Override
     protected void onUpdate() {
         int timeLeft = (int) (startIn - (System.currentTimeMillis() / 1000));
-        if (timeLeft > 20 && (timeLeft <= 25 || timeLeft % 10 == 0)) {
-            manager.getMHPlayers().forEach(p -> say(p, "&eRunner released for head start in &a" + TimeUtil.timeToMessage(timeLeft - 15) + "&e."));
+        if (timeLeft > 20 && (timeLeft <= 25 || timeLeft % 5 == 0)) {
+            manager.getMHPlayers().forEach(p -> say(p, "&eRunner released for head start in &a" + TimeUtil.timeToMessage(timeLeft - 20) + "&e."));
         } else if (timeLeft <= 20 && !manager.getRunner().isReleased()) {
             manager.getMHPlayers().forEach(p -> say(p, "&aThe speedrunner has been released for a head start."));
             manager.setReleased(manager.getRunner(), true);

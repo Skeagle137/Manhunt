@@ -156,14 +156,8 @@ public class MHManager {
             }
         });
 
-        new EventListener<>(BlockBreakEvent.class, e -> {
-            if (gameState != MHState.STARTING && gameState != MHState.INGAME) {
-                e.setCancelled(true);
-            }
-        });
-
         new EventListener<>(PlayerInteractEvent.class, e -> {
-            if (gameState != MHState.STARTING && gameState != MHState.INGAME) {
+            if ((gameState != MHState.STARTING && gameState != MHState.INGAME) && !e.getPlayer().isOp()) {
                 e.setCancelled(true);
             }
         });
