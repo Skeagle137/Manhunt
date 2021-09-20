@@ -1,6 +1,7 @@
 package net.skeagle.manhunt.model.player;
 
 import net.skeagle.manhunt.model.MHManager;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -31,7 +32,9 @@ public class HunterPlayer extends MHBasePlayer {
             compassMeta.setLodestoneTracked(false);
             compassMeta.setLodestone(lastRunnerLocation() != null ? lastRunnerLocation() : runnerLoc);
             item.setItemMeta(compassMeta);
-            getPlayer().updateInventory();
+            if (getPlayer().getGameMode() != GameMode.CREATIVE) {
+                getPlayer().updateInventory();
+            }
         }
         if (getManager().isTracker(this.getPlayer().getInventory().getItemInMainHand())) {
             boolean sameWorld = this.getPlayer().getWorld().getEnvironment() == getManager().getRunner().getPlayer().getWorld().getEnvironment();
