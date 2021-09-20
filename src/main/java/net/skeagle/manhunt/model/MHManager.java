@@ -88,7 +88,7 @@ public class MHManager {
             if (gameState != MHState.INGAME && gameState != MHState.ENDED) {
                 e.setQuitMessage(color("&e" + e.getPlayer().getName() + " &7left the game."));
             }
-            else {
+            else if (spectators.contains(e.getPlayer().getUniqueId())) {
                 e.setQuitMessage(color("&7" + e.getPlayer().getName() + " &8left the spectators."));
             }
         });
@@ -112,18 +112,14 @@ public class MHManager {
                     AdvancementProgress progress = e.getPlayer().getAdvancementProgress(it.next());
                     progress.getAwardedCriteria().forEach(progress::revokeCriteria);
                 }
-                p.getInventory().clear();
-                p.setFireTicks(0);
-                p.getActivePotionEffects().clear();
-                p.setArrowsInBody(0);
-                p.setFreezeTicks(0);
-                p.setFoodLevel(20);
-                p.setRemainingAir(p.getMaximumAir());
-                p.setHealth(p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
-                if (gameState == MHState.INGAME) {
+                resetPlayer(p);
+                if (gameState == MHState.INGAME || gameState == MHState.ENDED) {
                     p.teleport(worldManager.getManhuntWorld().getSpawnLocation());
                     p.setScoreboard(spectatorBoard.getBoard());
                     spectatorBoard.getTeam().addEntry(p.getName());
+                }
+                else {
+                    p.setGameMode(GameMode.SURVIVAL);
                 }
             }, 4L);
         });
@@ -213,6 +209,17 @@ public class MHManager {
                 }
             }
         });
+    }
+
+    public void resetPlayer(Player p) {
+        p.getInventory().clear();
+        p.setFireTicks(0);
+        p.getActivePotionEffects().clear();
+        p.setArrowsInBody(0);
+        p.setFreezeTicks(0);
+        p.setFoodLevel(20);
+        p.setRemainingAir(p.getMaximumAir());
+        p.setHealth(p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
     }
 
     public ItemStack getTrackerItem() {
