@@ -23,6 +23,10 @@ public class Settings {
     public static int startAreaDiameter = 7;
     @ConfigValue("send-to-server-lobby")
     public static boolean sendToServerLobby = false;
+    @ConfigValue("server-lobby-name")
+    public static String serverLobbyName = "lobby";
+    @ConfigValue("world-border-radius")
+    public static int worldBorder = 8000;
     @ConfigValue("spectators-allowed-commands")
     public static List<String> allowedSpecCommands = ConfigManager.list(String.class, "lobby", "hub", "server");
 

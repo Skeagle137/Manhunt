@@ -40,6 +40,10 @@ public final class Manhunt extends JavaPlugin {
         }
         //commands
         new CommandParser(getResource("commands.txt")).parse().register("mhplugin", this);
+        //extra things
+        if (Settings.sendToServerLobby) {
+            this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+        }
     }
 
     @Override
