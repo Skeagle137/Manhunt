@@ -33,7 +33,7 @@ public class StartingPhase extends MHBasePhase {
     private boolean huntersChosen;
     private World world;
     private Location[] startRegion;
-    private final int countdown = 30;
+    private final int countdown = 35;
 
     public StartingPhase(MHManager manager) {
         super(manager, MHState.STARTING);
@@ -123,14 +123,14 @@ public class StartingPhase extends MHBasePhase {
     @Override
     protected void onUpdate() {
         int timeLeft = (int) (startIn - (System.currentTimeMillis() / 1000));
-        if (timeLeft > 15 && (timeLeft <= 20 || timeLeft % 10 == 0)) {
+        if (timeLeft > 20 && (timeLeft <= 25 || timeLeft % 10 == 0)) {
             manager.getMHPlayers().forEach(p -> say(p, "&eRunner released for head start in &a" + TimeUtil.timeToMessage(timeLeft - 15) + "&e."));
-        } else if (timeLeft <= 15 && !manager.getRunner().isReleased()) {
+        } else if (timeLeft <= 20 && !manager.getRunner().isReleased()) {
             manager.getMHPlayers().forEach(p -> say(p, "&aThe speedrunner has been released for a head start."));
             manager.setReleased(manager.getRunner(), true);
         }
 
-        if ((timeLeft % 5 == 0 || timeLeft <= 5) && timeLeft > 0 && timeLeft <= 15) {
+        if ((timeLeft % 10 == 0 || timeLeft <= 5) && timeLeft > 0 && timeLeft <= 20) {
             manager.getMHPlayers().forEach(p -> say(p, "&cHunters released in &e" + timeLeft + " seconds."));
         }
         else if (timeLeft < 1) {
