@@ -8,6 +8,7 @@ import net.skeagle.vrnlib.misc.EventListener;
 import net.skeagle.vrnlib.misc.Task;
 import net.skeagle.vrnlib.misc.TimeUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import static net.skeagle.manhunt.Utils.say;
@@ -32,6 +33,9 @@ public class WaitPhase extends MHBasePhase {
 
         addListener(new EventListener<>(PlayerJoinEvent.class, e ->
                 Task.syncDelayed(() -> manager.fallbackPlayer(e.getPlayer()), 2L)));
+
+        addListener(new EventListener<>(EntityDamageEvent.class, e ->
+                e.setCancelled(true)));
     }
 
     @Override
