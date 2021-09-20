@@ -51,6 +51,7 @@ public class StartingPhase extends MHBasePhase {
 
         addListener(new EventListener<>(PlayerJoinEvent.class, e -> {
             teleportPlayerToMHWorld(e.getPlayer());
+            manager.resetPlayerStats(e.getPlayer());
             addHunter(e.getPlayer());
         }));
 
@@ -170,14 +171,16 @@ public class StartingPhase extends MHBasePhase {
     }
 
     private void chooseRunner() {
-        int i = rand.ints(0, Bukkit.getOnlinePlayers().size()).findFirst().getAsInt();
-        RunnerPlayer runner = new RunnerPlayer(manager, Bukkit.getOnlinePlayers().stream().toList().get(i));
+        int i = rand.ints(0, huntersChosen ? manager.getHunters().size() : Bukkit.getOnlinePlayers().size()).findFirst().getAsInt();
+        RunnerPlayer runner = new RunnerPlayer(manager, huntersChosen ?
+                manager.getHunters().stream().toList().get(i).getPlayer() : Bukkit.getOnlinePlayers().stream().toList().get(i));
         runner.getPlayer().sendTitle(color("&b&lRUNNER"), color("&eYour role has been assigned"), 5, 160, 40);
         manager.setRunner(runner);
         setScoreboard(runner.getPlayer(), manager.getRunnerBoard());
         //remove if previously a hunter
         manager.removeHunter(runner.getPlayer());
         if (!huntersChosen) {
+            //initial add all hunters
             Bukkit.getOnlinePlayers().forEach(p -> {
                 if (p != runner.getPlayer()) {
                     addHunter(p);

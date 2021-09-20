@@ -29,7 +29,10 @@ public class WaitPhase extends MHBasePhase {
         startIn = (System.currentTimeMillis() / 1000) + wait;
         timeElapsed = 0;
         startCountdown = false;
-        Bukkit.getOnlinePlayers().forEach(p -> p.setBedSpawnLocation(Settings.lobbyLocation, true));
+        Bukkit.getOnlinePlayers().forEach(p -> {
+            p.setBedSpawnLocation(Settings.lobbyLocation, true);
+            manager.resetPlayerStats(p);
+        });
 
         addListener(new EventListener<>(PlayerJoinEvent.class, e ->
                 Task.syncDelayed(() -> manager.fallbackPlayer(e.getPlayer()), 2L)));

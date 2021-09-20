@@ -101,25 +101,23 @@ public class MHManager {
                 e.setJoinMessage(color("&7" + e.getPlayer().getName() + " &8joined the spectators."));
             }
 
-            if (gameState == MHState.INGAME) {
-                e.getPlayer().setGameMode(GameMode.SPECTATOR);
-                spectators.add(e.getPlayer().getUniqueId());
-            }
             Task.syncDelayed(() -> {
                 Player p = e.getPlayer();
-                Iterator<Advancement> it = Bukkit.getServer().advancementIterator();
-                while (it.hasNext()) {
-                    AdvancementProgress progress = e.getPlayer().getAdvancementProgress(it.next());
-                    progress.getAwardedCriteria().forEach(progress::revokeCriteria);
-                }
-                resetPlayer(p);
+                resetPlayerStats(p);
                 if (gameState == MHState.INGAME || gameState == MHState.ENDED) {
+                    e.getPlayer().setGameMode(GameMode.SPECTATOR);
+                    spectators.add(e.getPlayer().getUniqueId());
                     p.teleport(worldManager.getManhuntWorld().getSpawnLocation());
                     p.setScoreboard(spectatorBoard.getBoard());
                     spectatorBoard.getTeam().addEntry(p.getName());
                 }
                 else {
                     p.setGameMode(GameMode.SURVIVAL);
+                    Iterator<Advancement> it = Bukkit.getServer().advancementIterator();
+                    while (it.hasNext()) {
+                        AdvancementProgress progress = e.getPlayer().getAdvancementProgress(it.next());
+                        progress.getAwardedCriteria().forEach(progress::revokeCriteria);
+                    }
                 }
             }, 4L);
         });
@@ -211,7 +209,7 @@ public class MHManager {
         });
     }
 
-    public void resetPlayer(Player p) {
+    public void resetPlayerStats(Player p) {
         p.getInventory().clear();
         p.setFireTicks(0);
         p.getActivePotionEffects().clear();
