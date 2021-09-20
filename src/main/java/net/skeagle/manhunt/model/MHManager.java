@@ -26,6 +26,8 @@ import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -250,7 +252,17 @@ public class MHManager {
     private void resetAndClose() {
         Bukkit.getOnlinePlayers().forEach(p -> {
             if (Settings.sendToServerLobby) {
-                p.performCommand("lobby");
+                try {
+                    ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+                    DataOutputStream out = new DataOutputStream(byteStream);
+                    out.writeUTF("Connect");
+                    out.writeUTF(Settings.serverLobbyName);
+                    p.sendPluginMessage(plugin, "BungeeCord", byteStream.toByteArray());
+                    byteStream.close();
+                    out.close();
+                } catch (Exception e) {
+                    p.kickPlayer(color("&cAn error occurred when trying to send you back to the lobby."));
+                }
             }
             else {
                 p.kickPlayer(color("&6Thanks for playing!"));
