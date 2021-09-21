@@ -15,7 +15,6 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.*;
@@ -27,7 +26,7 @@ import static net.skeagle.vrnlib.misc.FormatUtils.color;
 
 public class StartingPhase extends MHBasePhase {
 
-    private final Random rand;
+    private Random rand;
     private long startIn;
     private double particleOffset;
     private boolean huntersChosen;
@@ -37,16 +36,21 @@ public class StartingPhase extends MHBasePhase {
 
     public StartingPhase(MHManager manager) {
         super(manager, MHState.STARTING);
-        rand = new Random();
     }
 
     @Override
     protected void onInit() {
+        world = manager.getWorldManager().getManhuntWorld();
+        Location loc = world.getSpawnLocation();
+        double d = (double) Settings.startAreaDiameter / 2;
+        this.startRegion = new Location[]{loc.clone().add(d, 0, d), loc.clone().add(-d, 0, -d),
+                loc.clone().add(-d, 0, d), loc.clone().add(d, 0, -d)};
+
+        rand = new Random();
         particleOffset = 0;
         startIn = (System.currentTimeMillis() / 1000) + countdown;
         huntersChosen = false;
-        world = manager.getWorldManager().getManhuntWorld();
-        setupPlayers();
+        Bukkit.getOnlinePlayers().forEach(this::teleportPlayerToMHWorld);
         chooseRunner();
 
         addListener(new EventListener<>(PlayerJoinEvent.class, e -> {
@@ -73,7 +77,7 @@ public class StartingPhase extends MHBasePhase {
             if (player.isReleased())
                 return;
             Location to = e.getTo();
-            if (to == null || startRegion == null)
+            if (to == null)
                 return;
             if (to.getBlock().getX() < startRegion[0].getBlock().getX() && to.getBlock().getX() > startRegion[1].getBlock().getX() &&
                     to.getBlock().getZ() < startRegion[0].getBlock().getZ() && to.getBlock().getZ() > startRegion[1].getBlock().getZ()) {
@@ -147,14 +151,6 @@ public class StartingPhase extends MHBasePhase {
 
     private boolean isHunterOrNotReleased(Player p) {
         return manager.isHunter(p) || !manager.getRunner().isReleased();
-    }
-
-    private void setupPlayers() {
-        double d = (double) Settings.startAreaDiameter / 2;
-        Location loc = world.getSpawnLocation();
-        this.startRegion = new Location[]{loc.clone().add(d, 0, d), loc.clone().add(-d, 0, -d),
-                loc.clone().add(-d, 0, d), loc.clone().add(d, 0, -d)};
-        Bukkit.getOnlinePlayers().forEach(this::teleportPlayerToMHWorld);
     }
 
     private void teleportPlayerToMHWorld(Player player) {
