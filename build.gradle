@@ -23,7 +23,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'net.skeagle:VRNLib:1.2b'
+    implementation 'net.skeagle:VRNLib:1.3'
     compileOnly "org.spigotmc:spigot-api:${mc}-R0.1-SNAPSHOT"
 }
 
