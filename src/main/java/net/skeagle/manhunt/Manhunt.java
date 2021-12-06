@@ -2,7 +2,6 @@ package net.skeagle.manhunt;
 
 import net.skeagle.manhunt.config.Settings;
 import net.skeagle.manhunt.model.MHManager;
-import net.skeagle.manhunt.model.MHState;
 import net.skeagle.vrnlib.commandmanager.CommandHook;
 import net.skeagle.vrnlib.commandmanager.CommandParser;
 import net.skeagle.vrnlib.commandmanager.Messages;

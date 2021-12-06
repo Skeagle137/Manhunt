@@ -3,7 +3,6 @@ package net.skeagle.manhunt.phase;
 import net.skeagle.manhunt.config.Settings;
 import net.skeagle.manhunt.model.MHBasePhase;
 import net.skeagle.manhunt.model.MHManager;
-import net.skeagle.manhunt.model.MHScoreboard;
 import net.skeagle.manhunt.model.MHState;
 import net.skeagle.manhunt.model.player.MHBasePlayer;
 import net.skeagle.manhunt.model.player.RunnerPlayer;
@@ -41,6 +40,9 @@ public class StartingPhase extends MHBasePhase {
     @Override
     protected void onInit() {
         world = manager.getWorldManager().getManhuntWorld();
+        world.setTime(0);
+        world.setStorm(false);
+        world.setThundering(false);
         Location loc = world.getSpawnLocation();
         double d = (double) Settings.startAreaDiameter / 2;
         this.startRegion = new Location[]{loc.clone().add(d, 0, d), loc.clone().add(-d, 0, -d),
@@ -110,6 +112,9 @@ public class StartingPhase extends MHBasePhase {
 
         Task.syncDelayed(() -> manager.getMHBasePlayers().forEach(bp -> manager.setReleased(bp, false)), 4L);
 
+        Task.asyncRepeating(() ->
+                manager.getHunters().forEach(h -> h.getBoard().updateHunters(h.getHuntersNear())), 0L, 5L);
+
         addTask(Task.syncRepeating(() -> {
             manager.getMHBasePlayers().forEach(this::drawParticles);
             this.particleOffset += 0.5;
@@ -166,7 +171,7 @@ public class StartingPhase extends MHBasePhase {
                 manager.getHunters().stream().toList().get(i).getPlayer() : Bukkit.getOnlinePlayers().stream().toList().get(i));
         runner.getPlayer().sendTitle(color("&b&lRUNNER"), color("&eYour role has been assigned"), 5, 160, 40);
         manager.setRunner(runner);
-        setScoreboard(runner.getPlayer(), manager.getRunnerBoard());
+        manager.getRunnerBoard().addPlayer(runner.getPlayer());
         //remove if previously a hunter
         manager.removeHunter(runner.getPlayer());
         if (!huntersChosen) {
@@ -199,13 +204,7 @@ public class StartingPhase extends MHBasePhase {
 
     private void addHunter(Player player) {
         player.sendTitle(color("&c&lHUNTER"), color("&eYour role has been assigned"), 5, 160, 40);
-        setScoreboard(player, manager.getHunterBoard());
         manager.addHunter(player);
         manager.setReleased(manager.getHunter(player), false);
-    }
-
-    private void setScoreboard(Player player, MHScoreboard board) {
-        player.setScoreboard(board.getBoard());
-        board.getTeam().addEntry(player.getName());
     }
 }

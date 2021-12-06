@@ -5,6 +5,8 @@ import net.skeagle.manhunt.config.Settings;
 import net.skeagle.manhunt.model.player.HunterPlayer;
 import net.skeagle.manhunt.model.player.MHBasePlayer;
 import net.skeagle.manhunt.model.player.RunnerPlayer;
+import net.skeagle.manhunt.model.scoreboard.HunterScoreboard;
+import net.skeagle.manhunt.model.scoreboard.MHScoreboard;
 import net.skeagle.manhunt.phase.*;
 import net.skeagle.manhunt.vote.MHVoteManager;
 import net.skeagle.manhunt.world.WorldManager;
@@ -19,16 +21,17 @@ import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static net.skeagle.manhunt.Utils.say;
@@ -43,7 +46,7 @@ public class MHManager {
     private final Manhunt plugin;
     private final WorldManager worldManager;
     private final MHVoteManager voteManager;
-    private final MHScoreboard runnerBoard, hunterBoard, spectatorBoard;
+    private final MHScoreboard runnerBoard, spectatorBoard;
     private final List<MHBasePhase> phases;
     private MHBasePhase currentPhase;
     private MHState gameState;
@@ -59,7 +62,6 @@ public class MHManager {
         worldManager = new WorldManager();
         voteManager = new MHVoteManager();
         runnerBoard = new MHScoreboard("&b&lRUNNER", "&8[&bR&8]&r ", ChatColor.AQUA);
-        hunterBoard = new MHScoreboard("&c&lHUNTER", "&8[&cH&8]&r ", ChatColor.RED);
         spectatorBoard = new MHScoreboard("&7&lSPECTATOR", "&8[&7S&8]&r ", ChatColor.GRAY);
         phases = new ArrayList<>();
         hunters = new ArrayList<>();
@@ -104,17 +106,16 @@ public class MHManager {
             }
 
             Task.syncDelayed(() -> {
-                Player p = e.getPlayer();
-                resetPlayerStats(p);
+                Player player = e.getPlayer();
+                resetPlayerStats(player);
                 if (gameState == MHState.INGAME || gameState == MHState.ENDED) {
                     e.getPlayer().setGameMode(GameMode.SPECTATOR);
                     spectators.add(e.getPlayer().getUniqueId());
-                    p.teleport(worldManager.getManhuntWorld().getSpawnLocation());
-                    p.setScoreboard(spectatorBoard.getBoard());
-                    spectatorBoard.getTeam().addEntry(p.getName());
+                    player.teleport(worldManager.getManhuntWorld().getSpawnLocation());
+                    spectatorBoard.addPlayer(player);
                 }
                 else {
-                    p.setGameMode(GameMode.SURVIVAL);
+                    player.setGameMode(GameMode.SURVIVAL);
                     Iterator<Advancement> it = Bukkit.getServer().advancementIterator();
                     while (it.hasNext()) {
                         AdvancementProgress progress = e.getPlayer().getAdvancementProgress(it.next());
@@ -205,15 +206,19 @@ public class MHManager {
         });
     }
 
-    public void resetPlayerStats(Player p) {
-        p.getInventory().clear();
-        p.setFireTicks(0);
-        p.getActivePotionEffects().clear();
-        p.setArrowsInBody(0);
-        p.setFreezeTicks(0);
-        p.setFoodLevel(20);
-        p.setRemainingAir(p.getMaximumAir());
-        p.setHealth(p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+    public void resetPlayerStats(Player player) {
+        for (PotionEffect effect : player.getActivePotionEffects()) {
+            player.removePotionEffect(effect.getType());
+        }
+        player.getInventory().clear();
+        player.setFireTicks(0);
+        player.setArrowsInBody(0);
+        player.setFreezeTicks(0);
+        player.setFoodLevel(20);
+        player.setExp(0);
+        player.setLevel(0);
+        player.setRemainingAir(player.getMaximumAir());
+        player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
     }
 
     public ItemStack getTrackerItem() {
@@ -262,8 +267,7 @@ public class MHManager {
                 p.kickPlayer(color("&6Thanks for playing!"));
             }
         });
-        worldManager.deleteAll();
-        plugin.getServer().shutdown();
+        CompletableFuture.runAsync(worldManager::deleteAll).whenComplete((res, ex) -> plugin.getServer().shutdown());
     }
 
     public Manhunt getPlugin() {
@@ -280,10 +284,6 @@ public class MHManager {
 
     public MHScoreboard getRunnerBoard() {
         return runnerBoard;
-    }
-
-    public MHScoreboard getHunterBoard() {
-        return hunterBoard;
     }
 
     public MHState getState() {
@@ -341,10 +341,10 @@ public class MHManager {
         long hours = time % 31536000L % 86400L / 3600L;
         long minutes = time % 31536000L % 86400L % 3600L / 60L;
         long seconds = time % 31536000L % 86400L % 3600L % 60L;
-        String s = String.format("%02d", hours) + ":" + String.format("%02d", minutes) + ":" + String.format("%02d", seconds);
-        hunterBoard.updateTime(s);
-        runnerBoard.updateTime(s);
-        spectatorBoard.updateTime(s);
+        String newTime = String.format("%02d", hours) + ":" + String.format("%02d", minutes) + ":" + String.format("%02d", seconds);
+        getHunters().forEach(h -> h.getBoard().updateTime(newTime));
+        runnerBoard.updateTime(newTime);
+        spectatorBoard.updateTime(newTime);
     }
 
     public List<HunterPlayer> getHunters() {

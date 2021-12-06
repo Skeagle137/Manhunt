@@ -1,6 +1,7 @@
 package net.skeagle.manhunt.model.player;
 
 import net.skeagle.manhunt.model.MHManager;
+import net.skeagle.manhunt.model.scoreboard.HunterScoreboard;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -9,12 +10,19 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.CompassMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 import static net.skeagle.manhunt.Utils.sayActionBar;
 
 public class HunterPlayer extends MHBasePlayer {
 
+    private final HunterScoreboard board;
+
     public HunterPlayer(MHManager manager, Player player) {
         super(manager, player);
+        this.board = new HunterScoreboard();
+        this.board.addPlayer(player);
     }
 
     @Override
@@ -57,5 +65,18 @@ public class HunterPlayer extends MHBasePlayer {
             return runner.getLastPortal();
         }
         return runner.getPlayer().getLocation();
+    }
+
+    public Map<HunterPlayer, Integer> getHuntersNear() {
+        Map<HunterPlayer, Integer> sorted = new LinkedHashMap<>();
+        this.getManager().getHunters().forEach(h -> sorted.put(h, this.getPlayer().getWorld().getEnvironment() == h.getPlayer().getWorld().getEnvironment() ?
+                (int) h.getPlayer().getLocation().distance(this.getPlayer().getLocation()) : -1));
+        return sorted.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue))
+                .filter(h -> !this.equals(h.getKey())).limit(5)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+    }
+
+    public HunterScoreboard getBoard() {
+        return board;
     }
 }

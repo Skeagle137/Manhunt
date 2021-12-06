@@ -17,7 +17,6 @@ public class WorldManager {
     private final World manhuntEnd;
 
     public WorldManager() {
-
         manhuntWorld = deleteIfExists(Settings.worldName, World.Environment.NORMAL);
         manhuntNether = deleteIfExists(Settings.worldName + "_nether", World.Environment.NETHER);
         manhuntEnd = deleteIfExists(Settings.worldName + "_the_end", World.Environment.THE_END);
@@ -27,7 +26,6 @@ public class WorldManager {
         World w = Bukkit.getWorld(s);
         if (w != null) {
             deleteWorld(w);
-
         }
         return createWorld(s, env);
     }

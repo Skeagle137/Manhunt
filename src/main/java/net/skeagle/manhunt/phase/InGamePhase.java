@@ -52,7 +52,7 @@ public class InGamePhase extends MHBasePhase {
         addListener(new EventListener<>(PlayerPortalEvent.class, e -> {
             if (e.getCause() == PlayerTeleportEvent.TeleportCause.NETHER_PORTAL) {
                 if (e.getFrom().getWorld().getEnvironment() == World.Environment.NETHER) {
-                    Location to = e.getFrom().multiply(8);
+                    Location to = e.getFrom();
                     to.setWorld(manager.getWorldManager().getManhuntWorld());
                     e.setTo(to);
                 }
@@ -85,12 +85,13 @@ public class InGamePhase extends MHBasePhase {
         }));
 
         addTask(Task.syncRepeating(() ->
-                manager.getHunters().forEach(HunterPlayer::update), 0L, 4L));
+                manager.getHunters().forEach(HunterPlayer::update), 0L, 5L));
+
+        addTask(Task.asyncRepeating(() -> manager.updateDisplayTime(maxInGameTime - time), 0, 20L));
     }
 
     @Override
     protected void onUpdate() {
-        manager.updateDisplayTime(maxInGameTime - time);
         if (time >= maxInGameTime) {
             endGame(MHWinner.DRAW, MHEndReason.OUT_OF_TIME);
             return;
