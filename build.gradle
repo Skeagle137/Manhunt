@@ -9,22 +9,20 @@ plugins {
 group = 'net.skeagle'
 version = '1.2.0'
 description = 'manhunt'
-sourceCompatibility = 17
-targetCompatibility = 17
 
-String mc = '1.18'
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+}
+
+Version mc = new Version("18", "1")
+String vrnlib = '2.1'
 
 repositories {
     mavenCentral()
-    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
-    maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { url = uri('https://oss.sonatype.org/content/repositories/snapshots') }
     maven { url = uri('https://jitpack.io') }
+    gradlePluginPortal()
     mavenLocal()
-}
-
-dependencies {
-    implementation 'net.skeagle:VRNLib:1.4a'
-    compileOnly "org.spigotmc:spigot-api:${mc}-R0.1-SNAPSHOT"
 }
 
 sourceSets {
@@ -38,11 +36,17 @@ sourceSets {
     }
 }
 
+dependencies {
+    implementation "net.skeagle:VRNLib:${vrnlib}"
+    compileOnly "org.spigotmc:spigot-api:${mc.getVersion()}-R0.1-SNAPSHOT"
+}
+
 task updatePlugins {
     doLast {
         copy {
             from 'build/libs'
-            into "C:/Users/Skeagle/Documents/VRN Stuff/Dev ${mc}/plugins"
+            into "C:/Users/Skeagle/Documents/VRN Stuff/Dev ${mc.getMain()}/plugins"
+            rename { "${rootProject.name} ${version}.jar" }
         }
     }
 }
@@ -70,5 +74,28 @@ publishing {
     }
     repositories {
         mavenLocal()
+    }
+}
+
+class Version {
+
+    private String main
+    private String sub
+
+    Version(String main) {
+        this(main, null)
+    }
+
+    Version(String main, String sub) {
+        this.main = "1." + main
+        this.sub = sub
+    }
+
+    String getVersion() {
+        return main + (sub != null ? ".$sub" : "")
+    }
+
+    String getMain() {
+        return main
     }
 }
