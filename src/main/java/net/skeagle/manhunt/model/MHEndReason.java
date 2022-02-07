@@ -1,6 +1,6 @@
 package net.skeagle.manhunt.model;
 
-import net.skeagle.vrnlib.commandmanager.Messages;
+import net.skeagle.vrncommands.BukkitMessages;
 
 public enum MHEndReason {
     DRAGON_KILLED("dragonKilled"),
@@ -18,6 +18,6 @@ public enum MHEndReason {
     }
 
     public String get() {
-        return Messages.msg(reason);
+        return BukkitMessages.msg(reason);
     }
 }

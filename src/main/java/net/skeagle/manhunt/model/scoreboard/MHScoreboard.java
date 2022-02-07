@@ -9,7 +9,7 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
-import static net.skeagle.vrnlib.misc.FormatUtils.color;
+import static net.skeagle.vrncommands.BukkitUtils.color;
 
 public class MHScoreboard {
 

@@ -1,6 +1,6 @@
 package net.skeagle.manhunt.model;
 
-import net.skeagle.vrnlib.commandmanager.Messages;
+import net.skeagle.vrncommands.BukkitMessages;
 
 public enum MHWinner {
     RUNNER("runnerWin"),
@@ -14,6 +14,6 @@ public enum MHWinner {
     }
 
     public String getTitle() {
-        return Messages.msg(title);
+        return BukkitMessages.msg(title);
     }
 }

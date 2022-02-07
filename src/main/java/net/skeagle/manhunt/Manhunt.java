@@ -1,12 +1,15 @@
 package net.skeagle.manhunt;
 
-import net.skeagle.manhunt.config.Settings;
 import net.skeagle.manhunt.model.MHManager;
-import net.skeagle.vrnlib.commandmanager.CommandHook;
-import net.skeagle.vrnlib.commandmanager.CommandParser;
-import net.skeagle.vrnlib.commandmanager.Messages;
+import net.skeagle.manhunt.world.WorldManager;
+import net.skeagle.vrncommands.BukkitCommandParser;
+import net.skeagle.vrncommands.BukkitCommandRegistry;
+import net.skeagle.vrncommands.BukkitMessages;
+import net.skeagle.vrncommands.CommandHook;
+import net.skeagle.vrnlib.config.ConfigManager;
 import net.skeagle.vrnlib.misc.EventListener;
 import net.skeagle.vrnlib.misc.Task;
+import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -16,29 +19,30 @@ import static net.skeagle.manhunt.Utils.say;
 
 public final class Manhunt extends JavaPlugin {
 
-    private Settings settings;
-    private MHManager manager;
+    private ConfigManager config;
+    private WorldManager worldManager;
+    private boolean loaded = false;
 
     @Override
     public void onEnable() {
         //settings and messages
-        Messages.load(this);
-        settings = new Settings(this);
-        //manager
+        BukkitMessages.load(this);
+        config = ConfigManager.create(this).addConverter(Location.class, Utils::deserializeLocation, Utils::serializeLocation).target(Settings.class).saveDefaults().load();
+        worldManager = new WorldManager(this);
         if (Settings.lobbyLocation == null) {
             new EventListener<>(PlayerJoinEvent.class, e ->
                     Task.syncDelayed(() -> {
                         if (e.getPlayer().isOp()) {
                             say(e.getPlayer(), "&cThe lobby location has not been set, so games cannot start." +
-                                    "\n&cPlease set the lobby position with /setlobby. Then restart the server.");
+                                    "\n&cPlease set the lobby position with /setlobby, then the game will enable.");
                         }
                     }, 4L));
         }
         else {
-            manager = new MHManager(this);
+            load();
         }
         //commands
-        new CommandParser(getResource("commands.txt")).parse().register("mhplugin", this);
+        new BukkitCommandParser(getResource("commands.txt")).parse().register(new BukkitCommandRegistry(this), "manhunt", this);
         //extra things
         if (Settings.sendToServerLobby) {
             this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
@@ -47,16 +51,18 @@ public final class Manhunt extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        settings.get().save();
-        if (manager != null) {
-            manager.getWorldManager().deleteAll();
-        }
+        config.save();
+    }
+
+    public void load() {
+        new MHManager(this, worldManager);
+        loaded = true;
     }
 
     @CommandHook("reload")
     public void onReload(final CommandSender sender) {
-        Messages.load(this);
-        settings.get().load();
+        BukkitMessages.load(this);
+        config.reload();
         say(sender, "&aConfig and messages reloaded.");
     }
 
@@ -68,5 +74,8 @@ public final class Manhunt extends JavaPlugin {
         }
         Settings.lobbyLocation = player.getLocation();
         say(player, "&aUpdated the lobby position. Players will spawn here when they join and when a game has ended.");
+        if (!loaded) {
+            load();
+        }
     }
 }

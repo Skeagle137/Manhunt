@@ -1,6 +1,6 @@
 package net.skeagle.manhunt.phase;
 
-import net.skeagle.manhunt.config.Settings;
+import net.skeagle.manhunt.Settings;
 import net.skeagle.manhunt.model.MHBasePhase;
 import net.skeagle.manhunt.model.MHManager;
 import net.skeagle.manhunt.model.MHState;
@@ -21,7 +21,7 @@ import org.bukkit.event.player.*;
 import java.util.Random;
 
 import static net.skeagle.manhunt.Utils.say;
-import static net.skeagle.vrnlib.misc.FormatUtils.color;
+import static net.skeagle.vrncommands.BukkitUtils.color;
 
 public class StartingPhase extends MHBasePhase {
 

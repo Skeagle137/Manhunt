@@ -6,7 +6,7 @@ import org.bukkit.scoreboard.Team;
 
 import java.util.Map;
 
-import static net.skeagle.vrnlib.misc.FormatUtils.color;
+import static net.skeagle.vrncommands.BukkitUtils.color;
 
 public class HunterScoreboard extends MHScoreboard {
 

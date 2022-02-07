@@ -1,11 +1,10 @@
 package net.skeagle.manhunt.model;
 
 import net.skeagle.manhunt.Manhunt;
-import net.skeagle.manhunt.config.Settings;
+import net.skeagle.manhunt.Settings;
 import net.skeagle.manhunt.model.player.HunterPlayer;
 import net.skeagle.manhunt.model.player.MHBasePlayer;
 import net.skeagle.manhunt.model.player.RunnerPlayer;
-import net.skeagle.manhunt.model.scoreboard.HunterScoreboard;
 import net.skeagle.manhunt.model.scoreboard.MHScoreboard;
 import net.skeagle.manhunt.phase.*;
 import net.skeagle.manhunt.vote.MHVoteManager;
@@ -35,7 +34,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static net.skeagle.manhunt.Utils.say;
-import static net.skeagle.vrnlib.misc.FormatUtils.color;
+import static net.skeagle.vrncommands.BukkitUtils.color;
 
 public class MHManager {
 
@@ -56,10 +55,11 @@ public class MHManager {
     private Task updateTask;
     private int phaseIndex;
 
-    public MHManager(Manhunt plugin) {
+    public MHManager(Manhunt plugin, WorldManager worldManager) {
         //setup
         this.plugin = plugin;
-        worldManager = new WorldManager();
+        this.worldManager = worldManager;
+        this.worldManager.loadWorlds();
         voteManager = new MHVoteManager();
         runnerBoard = new MHScoreboard("&b&lRUNNER", "&8[&bR&8]&r ", ChatColor.AQUA);
         spectatorBoard = new MHScoreboard("&7&lSPECTATOR", "&8[&7S&8]&r ", ChatColor.GRAY);
@@ -233,7 +233,6 @@ public class MHManager {
 
     public void fallbackPlayer(Player player) {
         player.teleport(Settings.lobbyLocation);
-        player.getInventory().clear();
     }
 
     public Task getUpdateTask() {
@@ -250,6 +249,7 @@ public class MHManager {
 
     private void resetAndClose() {
         Bukkit.getOnlinePlayers().forEach(p -> {
+            fallbackPlayer(p);
             if (Settings.sendToServerLobby) {
                 try {
                     ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
@@ -267,7 +267,8 @@ public class MHManager {
                 p.kickPlayer(color("&6Thanks for playing!"));
             }
         });
-        CompletableFuture.runAsync(worldManager::deleteAll).whenComplete((res, ex) -> plugin.getServer().shutdown());
+        worldManager.deleteAll();
+        Task.syncDelayed(plugin.getServer()::shutdown, 10L);
     }
 
     public Manhunt getPlugin() {

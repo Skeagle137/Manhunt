@@ -1,6 +1,6 @@
 package net.skeagle.manhunt.phase;
 
-import net.skeagle.manhunt.config.Settings;
+import net.skeagle.manhunt.Settings;
 import net.skeagle.manhunt.model.*;
 import net.skeagle.manhunt.model.player.HunterPlayer;
 import net.skeagle.vrnlib.misc.EventListener;

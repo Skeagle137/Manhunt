@@ -4,12 +4,10 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import static net.skeagle.vrnlib.misc.FormatUtils.color;
+import static net.skeagle.vrncommands.BukkitUtils.color;
 
 public class Utils {
 
