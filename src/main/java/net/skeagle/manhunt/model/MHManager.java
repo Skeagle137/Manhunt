@@ -19,6 +19,7 @@ import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.*;
@@ -115,7 +116,7 @@ public class MHManager {
                 }
                 else {
                     player.setGameMode(GameMode.SURVIVAL);
-                    player.getDiscoveredRecipes().clear();
+                    player.getDiscoveredRecipes().forEach(player::undiscoverRecipe);
                     Iterator<Advancement> it = Bukkit.getServer().advancementIterator();
                     while (it.hasNext()) {
                         AdvancementProgress progress = e.getPlayer().getAdvancementProgress(it.next());
