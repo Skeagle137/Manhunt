@@ -131,13 +131,17 @@ public class StartingPhase extends MHBasePhase {
         } else if (timeLeft <= 20 && !manager.getRunner().isReleased()) {
             manager.getMHPlayers().forEach(p -> say(p, "&aThe speedrunner has been released for a head start."));
             manager.setReleased(manager.getRunner(), true);
+            manager.resetFood(manager.getRunner().getPlayer());
         }
 
         if ((timeLeft % 10 == 0 || timeLeft <= 5) && timeLeft > 0 && timeLeft <= 20) {
             manager.getMHPlayers().forEach(p -> say(p, "&cHunters released in &e" + timeLeft + " seconds."));
         }
         else if (timeLeft < 1) {
-            manager.getHunters().forEach(h -> manager.setReleased(h, true));
+            manager.getHunters().forEach(h -> {
+                manager.setReleased(h, true);
+                manager.resetFood(h.getPlayer());
+            });
             manager.getMHPlayers().forEach(p -> say(p, "&cHunters have been released."));
             nextPhase();
         }

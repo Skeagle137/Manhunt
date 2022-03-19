@@ -30,7 +30,6 @@ import org.bukkit.potion.PotionEffect;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static net.skeagle.manhunt.Utils.say;
@@ -116,6 +115,7 @@ public class MHManager {
                 }
                 else {
                     player.setGameMode(GameMode.SURVIVAL);
+                    player.getDiscoveredRecipes().clear();
                     Iterator<Advancement> it = Bukkit.getServer().advancementIterator();
                     while (it.hasNext()) {
                         AdvancementProgress progress = e.getPlayer().getAdvancementProgress(it.next());
@@ -210,15 +210,21 @@ public class MHManager {
         for (PotionEffect effect : player.getActivePotionEffects()) {
             player.removePotionEffect(effect.getType());
         }
+        this.resetFood(player);
         player.getInventory().clear();
         player.setFireTicks(0);
         player.setArrowsInBody(0);
         player.setFreezeTicks(0);
-        player.setFoodLevel(20);
         player.setExp(0);
         player.setLevel(0);
         player.setRemainingAir(player.getMaximumAir());
         player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+    }
+
+    public void resetFood(Player player) {
+        player.setFoodLevel(20);
+        player.setSaturation(5);
+        player.setExhaustion(0);
     }
 
     public ItemStack getTrackerItem() {
