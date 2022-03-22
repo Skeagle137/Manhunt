@@ -89,12 +89,11 @@ public class MHManager {
         });
 
         new EventListener<>(PlayerQuitEvent.class, e -> {
-            if (gameState != MHState.INGAME && gameState != MHState.ENDED) {
+            if (!spectators.contains(e.getPlayer().getUniqueId())) {
                 e.setQuitMessage(color("&e" + e.getPlayer().getName() + " &7left the game."));
+                return;
             }
-            else if (spectators.contains(e.getPlayer().getUniqueId())) {
-                e.setQuitMessage(color("&7" + e.getPlayer().getName() + " &8left the spectators."));
-            }
+            e.setQuitMessage(color("&7" + e.getPlayer().getName() + " &8left the spectators."));
         });
 
         new EventListener<>(PlayerJoinEvent.class, e -> {
